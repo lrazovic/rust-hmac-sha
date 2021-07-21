@@ -21,3 +21,8 @@ sha3 = "0.9"
 
 [dev-dependencies]
 hex = "0.4"
+criterion = "0.3"
+
+[[bench]]
+name = "sha1_bench"
+harness = false
