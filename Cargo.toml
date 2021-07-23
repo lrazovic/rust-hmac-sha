@@ -1,6 +1,6 @@
 [package]
 name = "hmac-sha"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2018"
 authors = ["Philip Woolford <woolford.philip@gmail.com>", "Leonardo Razovic <lrazovic@gmail.com>"]
 keywords = ["crypto", "sha", "hmac", "digest"]
@@ -15,13 +15,14 @@ name = "hmacsha"
 path = "src/lib.rs"
 
 [dependencies]
-sha-1 = "0.9"
-sha2 = "0.9"
-sha3 = "0.9"
+hmac = "0.11"
 
 [dev-dependencies]
 hex = "0.4"
 criterion = "0.3"
+sha-1 = "0.9"
+sha2 = "0.9"
+sha3 = "0.9"
 
 [[bench]]
 name = "sha1_bench"

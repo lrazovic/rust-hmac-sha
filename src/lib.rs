@@ -1,23 +1,17 @@
 #![no_std]
 
-// define hash constants
-pub const SHA1_DIGEST_BYTES: usize = 20;
-const SHA1_KEY_BYTES: usize = 64;
+use hmac::{
+    digest::{BlockInput, Digest, FixedOutputDirty, Reset, Update},
+    Hmac, Mac, NewMac,
+};
 
-// set constants for HMAC
-const INNER_PAD_BYTES: u8 = 0x36;
-const OUTER_PAD_BYTE: u8 = 0x5c;
-const KEY_PAD_BYTE: u8 = 0x00;
-
-use sha1::{Digest, Sha1};
-
-pub struct HmacSha1<'a> {
+pub struct HmacSha<'a> {
     key: &'a [u8],
     message: &'a [u8],
     output: &'a mut [u8],
 }
 
-impl<'a> HmacSha1<'a> {
+impl<'a> HmacSha<'a> {
     pub fn new(key: &'a [u8], message: &'a [u8], output: &'a mut [u8]) -> Self {
         Self {
             key,
@@ -34,49 +28,23 @@ impl<'a> HmacSha1<'a> {
         }
     }
 
-    #[inline(always)]
-    pub fn digest(&mut self) {
-        // instantiate internal structures
-        let mut hasher = Sha1::new();
-        let auth_key: &mut [u8; SHA1_KEY_BYTES] = &mut [KEY_PAD_BYTE; SHA1_KEY_BYTES];
-
-        // if the key is longer than the hasher's block length, it should be truncated using the hasher
-        if self.key.len() > SHA1_KEY_BYTES {
-            // derive new authentication from provided key
-            hasher.update(self.key);
-
-            // assign derived authentication key
-            let digest = hasher.finalize_reset();
-            auth_key[..SHA1_DIGEST_BYTES].copy_from_slice(&(digest));
-        } else {
-            auth_key[..self.key.len()].copy_from_slice(self.key);
-        }
-
-        // generate padding arrays
-        let mut inner_padding: [u8; SHA1_KEY_BYTES] = [INNER_PAD_BYTES; SHA1_KEY_BYTES];
-        let mut outer_padding: [u8; SHA1_KEY_BYTES] = [OUTER_PAD_BYTE; SHA1_KEY_BYTES];
-
-        for (offset, elem) in auth_key.iter().enumerate() {
-            inner_padding[offset] ^= elem;
-            outer_padding[offset] ^= elem;
-        }
-
-        // perform inner hash
-        hasher.update(&inner_padding);
-        hasher.update(self.message);
-        let inner_hash = hasher.finalize_reset();
-
-        // perform outer hash
-        hasher.update(&outer_padding);
-        hasher.update(&inner_hash);
-        self.output.copy_from_slice(&hasher.finalize())
+    pub fn digest<D: Digest + Update + BlockInput + Reset + Default + Clone + FixedOutputDirty>(
+        &mut self,
+    ) {
+        let mut mac = Hmac::<D>::new_from_slice(self.key).expect("HMAC can take key of any size");
+        mac.update(self.message);
+        self.output.copy_from_slice(&mac.finalize().into_bytes())
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use super::HmacSha1;
+    use super::HmacSha;
+    use crate::constants::*;
+    use sha1::Sha1;
+    use sha2::{Sha256, Sha512};
+    use sha3::Sha3_256;
 
     #[test]
     fn test_vector1() {
@@ -85,7 +53,8 @@ mod tests {
         let key = &[0x0b; 20];
         let expected = "b617318655057264e28bc0b6fb378c8ef146be00";
         let mut buf = [0_u8; 20];
-        HmacSha1::new(key, data, &mut buf).digest();
+        let mut hasher = HmacSha::new(key, data, &mut buf);
+        hasher.digest::<Sha1>();
         assert_eq!(hex::encode(buf), expected);
     }
 
@@ -96,7 +65,8 @@ mod tests {
         let key = "Jefe".as_bytes();
         let expected = "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79";
         let mut buf = [0_u8; 20];
-        HmacSha1::new(key, data, &mut buf).digest();
+        let mut hasher = HmacSha::new(key, data, &mut buf);
+        hasher.digest::<Sha1>();
         assert_eq!(hex::encode(buf), expected);
     }
 
@@ -107,7 +77,8 @@ mod tests {
         let key = &[0xaa; 20];
         let expected = "125d7342b9ac11cd91a39af48aa17b4f63f175d3";
         let mut buf = [0_u8; 20];
-        HmacSha1::new(key, data, &mut buf).digest();
+        let mut hasher = HmacSha::new(key, data, &mut buf);
+        hasher.digest::<Sha1>();
         assert_eq!(hex::encode(buf), expected);
     }
 
@@ -121,17 +92,58 @@ mod tests {
         ];
         let expected = "4c9007f4026250c6bc8414f9bf50c86c2d7235da";
         let mut buf = [0_u8; 20];
-        HmacSha1::new(key, data, &mut buf).digest();
+        let mut hasher = HmacSha::new(key, data, &mut buf);
+        hasher.digest::<Sha1>();
         assert_eq!(hex::encode(buf), expected);
     }
 
     #[test]
     fn test_readme() {
-        let mut digest = [0u8; 20];
+        let mut digest = [0_u8; SHA1_OUTPUT_SIZE];
         let secret_key = "A very strong secret";
         let message = "My secret message";
         let expected = "bc192ba8d968e0c705eecd406c74299ca83d05e6";
-        HmacSha1::from(secret_key, &message, &mut digest).digest();
+        let mut hasher = HmacSha::from(secret_key, message, &mut digest);
+        hasher.digest::<Sha1>();
         assert_eq!(hex::encode(digest), expected);
     }
+
+    #[test]
+    fn test_readme_sha2() {
+        let mut digest = [0_u8; SHA_256_OUTPUT_SIZE];
+        let secret_key = "A very strong secret";
+        let message = "My secret message";
+        let expected = "4134aad013bd12a6d7b0a5b5e78e3b1a76cb095cf5b7ceb6ac0717e433f56133";
+        let mut hasher = HmacSha::from(secret_key, message, &mut digest);
+        hasher.digest::<Sha256>();
+        assert_eq!(hex::encode(digest), expected);
+    }
+
+    #[test]
+    fn test_readme_sha3() {
+        let mut digest = [0_u8; SHA_256_OUTPUT_SIZE];
+        let secret_key = "A very strong secret";
+        let message = "My secret message";
+        let expected = "92b41d5b7e665a81faa9c18e25657107ad8f174cdc7558a15b6990c2c47c7bfe";
+        let mut hasher = HmacSha::from(secret_key, message, &mut digest);
+        hasher.digest::<Sha3_256>();
+        assert_eq!(hex::encode(digest), expected);
+    }
+
+    #[test]
+    fn test_readme_sha2_512() {
+        let mut digest = [0_u8; SHA_512_OUTPUT_SIZE];
+        let secret_key = "A very strong secret";
+        let message = "My secret message";
+        let expected = "e9a33f07f9d14e95efda67889e015c73b8c71c1372976c1d247c0e1d1aad7822427f113d8d8f0a5fbb33c7a547491867346d19e2a02bf02349118ff6c6eba51a";
+        let mut hasher = HmacSha::from(secret_key, message, &mut digest);
+        hasher.digest::<Sha512>();
+        assert_eq!(hex::encode(digest), expected);
+    }
+}
+
+pub mod constants {
+    pub const SHA1_OUTPUT_SIZE: usize = 20;
+    pub const SHA_256_OUTPUT_SIZE: usize = 32;
+    pub const SHA_512_OUTPUT_SIZE: usize = 64;
 }
