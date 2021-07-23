@@ -16,20 +16,23 @@ To import rust-hmac-sha add the following to your Cargo.toml:
 
 ```toml
 [dependencies]
-hmac-sha = "0.2"
+hmac-sha = "0.4"
 ```
 
 To use rust-hmac-sha add the following to your crate root:
 
 ```rust
 use hex;
-use hmacsha::hmac_sha1;
+use hmacsha::HmacSha;
+use hmacsha::ShaTypes;
 
-let mut digest = [0u8; 20];
-let secret_key = "A very strong secret".as_bytes();
-let message = "My secret message".as_bytes();
-hmac_sha1(secret_key, &message, &mut digest);
-println!("{}", hex::encode(digest));
+let secret_key = "A very strong secret";
+let message = "My secret message";
+let expected = "bc192ba8d968e0c705eecd406c74299ca83d05e6";
+let mut hasher = HmacSha::from(secret_key, message, ShaTypes::Sha1);
+let result = hasher.compute_digest();
+
+println!("{}", hex::encode(result));
 ```
 
 ## Contributions
