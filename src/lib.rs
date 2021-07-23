@@ -9,6 +9,7 @@ pub struct HmacSha<'a> {
     sha_type: ShaTypes,
 }
 
+#[derive(Clone)]
 pub enum ShaTypes {
     Sha1,
     Sha2_256,
