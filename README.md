@@ -8,7 +8,8 @@ A pure Rust implementation of the Hash-based Message Authentication Code Algorit
 ## Origins and motivations
 
 This repo is a fork of [Rust-HMAC-SHA1](https://github.com/pantsman0/rust-hmac-sha1) by @pantsman0/Philip Woolford.
-Unlike the original version, it supports SHA-2 and SHA-3 in addition to SHA-1. In addition this fork uses the implementations of SHA provided by [RustCrypto](https://github.com/RustCrypto/hashes)
+Unlike the original version, it supports SHA-2 and SHA-3 in addition to SHA-1. In addition this fork uses the implementations of SHA provided by [RustCrypto](https://github.com/RustCrypto/hashes). Has been developed to assist in the development of [OOTP](https://github.com/odroe/ootp).
+
 
 ## Usage
 

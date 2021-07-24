@@ -19,6 +19,7 @@ pub enum ShaTypes {
 }
 
 impl<'a> HmacSha<'a> {
+    #[must_use]
     pub fn new(key: &'a [u8], message: &'a [u8], sha_type: ShaTypes) -> Self {
         Self {
             key,
@@ -27,6 +28,7 @@ impl<'a> HmacSha<'a> {
         }
     }
 
+    #[must_use]
     pub fn from(key: &'a str, message: &'a str, sha_type: ShaTypes) -> Self {
         Self {
             key: key.as_bytes(),
@@ -41,41 +43,31 @@ impl<'a> HmacSha<'a> {
                 let mut mac =
                     Hmac::<Sha1>::new_from_slice(self.key).expect("HMAC can take key of any size");
                 mac.update(self.message);
-                let mut output = [0_u8; 20];
-                output.copy_from_slice(&mac.finalize().into_bytes());
-                output.to_vec()
+                mac.finalize().into_bytes().to_vec()
             }
             ShaTypes::Sha2_256 => {
                 let mut mac = Hmac::<Sha256>::new_from_slice(self.key)
                     .expect("HMAC can take key of any size");
                 mac.update(self.message);
-                let mut output = [0_u8; 32];
-                output.copy_from_slice(&mac.finalize().into_bytes());
-                output.to_vec()
+                mac.finalize().into_bytes().to_vec()
             }
             ShaTypes::Sha2_512 => {
                 let mut mac = Hmac::<Sha512>::new_from_slice(self.key)
                     .expect("HMAC can take key of any size");
                 mac.update(self.message);
-                let mut output = [0_u8; 64];
-                output.copy_from_slice(&mac.finalize().into_bytes());
-                output.to_vec()
+                mac.finalize().into_bytes().to_vec()
             }
             ShaTypes::Sha3_256 => {
                 let mut mac = Hmac::<Sha3_256>::new_from_slice(self.key)
                     .expect("HMAC can take key of any size");
                 mac.update(self.message);
-                let mut output = [0_u8; 32];
-                output.copy_from_slice(&mac.finalize().into_bytes());
-                output.to_vec()
+                mac.finalize().into_bytes().to_vec()
             }
             ShaTypes::Sha3_512 => {
                 let mut mac = Hmac::<Sha3_512>::new_from_slice(self.key)
                     .expect("HMAC can take key of any size");
                 mac.update(self.message);
-                let mut output = [0_u8; 64];
-                output.copy_from_slice(&mac.finalize().into_bytes());
-                output.to_vec()
+                mac.finalize().into_bytes().to_vec()
             }
         }
     }

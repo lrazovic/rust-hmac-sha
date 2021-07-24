@@ -1,6 +1,6 @@
 [package]
 name = "hmac-sha"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2018"
 authors = ["Philip Woolford <woolford.philip@gmail.com>", "Leonardo Razovic <lrazovic@gmail.com>"]
 keywords = ["crypto", "sha", "hmac", "digest"]
@@ -8,7 +8,7 @@ description = "Minimal implementation of HMAC-SHA-{1,2,3} in Rust."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/lrazovic/rust-hmac-sha"
 include = ["**/*.rs", "LICENSE"]
-categories = ["cryptography", "hmac"]
+categories = ["cryptography"]
 
 [lib]
 name = "hmacsha"
