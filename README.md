@@ -30,7 +30,7 @@ use hmacsha::ShaTypes;
 let secret_key = "A very strong secret";
 let message = "My secret message";
 let expected = "bc192ba8d968e0c705eecd406c74299ca83d05e6";
-let mut hasher = HmacSha::from(secret_key, message, ShaTypes::Sha1);
+let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha1);
 let result = hasher.compute_digest();
 
 println!("{}", hex::encode(result));

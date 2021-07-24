@@ -7,7 +7,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let message = "My secret message";
     c.bench_function("HOTP Generation", |b| {
         b.iter(|| {
-            HmacSha::from(black_box(secret_key), black_box(message), ShaTypes::Sha1)
+            HmacSha::from(black_box(secret_key), black_box(message), &ShaTypes::Sha1)
                 .compute_digest()
         })
     });
