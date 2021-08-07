@@ -3,7 +3,9 @@
 ![CI status](https://github.com/lrazovic/rust-hmac-sha1/actions/workflows/ci.yml/badge.svg)
 [![creates.io version](https://img.shields.io/crates/v/hmac-sha)](https://crates.io/crates/hmac-sha)
 
-A pure Rust implementation of the Hash-based Message Authentication Code Algoritm for SHA-{1,2,3}.
+A pure Rust implementation of the Hash-based Message Authentication Code Algoritm for SHA-{1,2,3}. This project can be seen as an interface for the [RustCrypto](https://github.com/RustCrypto/hashes) crate, 
+focusing on user/developer ease of use.
+Works in a `#![no_std]` environment.
 
 ## Origins and motivations
 
@@ -20,7 +22,7 @@ To import rust-hmac-sha add the following to your Cargo.toml:
 hmac-sha = "0.4"
 ```
 
-To use rust-hmac-sha add the following to your crate root:
+To use `rust-hmac-sha` add the following to your crate root:
 
 ```rust
 use hex;
