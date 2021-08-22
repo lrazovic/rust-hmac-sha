@@ -15,16 +15,16 @@ name = "hmacsha"
 path = "src/lib.rs"
 
 [dependencies]
-heapless = "0.7"
-hmac = { version = "0.11", default-features = false }
-sha-1 = { version = "0.9", default-features = false }
-sha2 = { version = "0.9", default-features = false }
-sha3 = { version = "0.9", default-features = false }
+heapless = "0.7.5"
+hmac = { version = "0.11.0", default-features = false }
+sha-1 = { version = "0.9.7", default-features = false }
+sha2 = { version = "0.9.5", default-features = false }
+sha3 = { version = "0.9.1", default-features = false }
 
 
 [dev-dependencies]
-hex = "0.4"
-criterion = "0.3"
+hex = "0.4.3"
+criterion = "0.3.5"
 
 [[bench]]
 name = "sha1_bench"
