@@ -1,6 +1,6 @@
 [package]
 name = "hmac-sha"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2018"
 authors = ["Philip Woolford <woolford.philip@gmail.com>", "Leonardo Razovic <lrazovic@gmail.com>"]
 keywords = ["crypto", "sha", "hmac", "digest"]
@@ -16,10 +16,11 @@ path = "src/lib.rs"
 
 [dependencies]
 heapless = "0.7"
-hmac = "0.11"
-sha-1 = "0.9"
-sha2 = "0.9"
-sha3 = "0.9"
+hmac = { version = "0.11", default-features = false }
+sha-1 = { version = "0.9", default-features = false }
+sha2 = { version = "0.9", default-features = false }
+sha3 = { version = "0.9", default-features = false }
+
 
 [dev-dependencies]
 hex = "0.4"
