@@ -22,7 +22,7 @@ pub enum ShaTypes {
 
 impl<'a> HmacSha<'a> {
     #[must_use]
-    pub fn new(key: &'a [u8], message: &'a [u8], sha_type: &'a ShaTypes) -> Self {
+    pub const fn new(key: &'a [u8], message: &'a [u8], sha_type: &'a ShaTypes) -> Self {
         Self {
             key,
             message,
@@ -31,7 +31,7 @@ impl<'a> HmacSha<'a> {
     }
 
     #[must_use]
-    pub fn from(key: &'a str, message: &'a str, sha_type: &'a ShaTypes) -> Self {
+    pub const fn from(key: &'a str, message: &'a str, sha_type: &'a ShaTypes) -> Self {
         Self {
             key: key.as_bytes(),
             message: message.as_bytes(),
@@ -47,7 +47,7 @@ impl<'a> HmacSha<'a> {
                 mac.update(self.message);
                 let bytes = mac.finalize().into_bytes();
                 let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).unwrap()
+                Vec::from_slice(bytes).expect("Failed to compute the digest")
             }
             ShaTypes::Sha2_256 => {
                 let mut mac = Hmac::<Sha256>::new_from_slice(self.key)
@@ -55,7 +55,7 @@ impl<'a> HmacSha<'a> {
                 mac.update(self.message);
                 let bytes = mac.finalize().into_bytes();
                 let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).unwrap()
+                Vec::from_slice(bytes).expect("Failed to compute the digest")
             }
             ShaTypes::Sha2_512 => {
                 let mut mac = Hmac::<Sha512>::new_from_slice(self.key)
@@ -63,7 +63,7 @@ impl<'a> HmacSha<'a> {
                 mac.update(self.message);
                 let bytes = mac.finalize().into_bytes();
                 let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).unwrap()
+                Vec::from_slice(bytes).expect("Failed to compute the digest")
             }
             ShaTypes::Sha3_256 => {
                 let mut mac = Hmac::<Sha3_256>::new_from_slice(self.key)
@@ -71,7 +71,7 @@ impl<'a> HmacSha<'a> {
                 mac.update(self.message);
                 let bytes = mac.finalize().into_bytes();
                 let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).unwrap()
+                Vec::from_slice(bytes).expect("Failed to compute the digest")
             }
             ShaTypes::Sha3_512 => {
                 let mut mac = Hmac::<Sha3_512>::new_from_slice(self.key)
@@ -79,7 +79,7 @@ impl<'a> HmacSha<'a> {
                 mac.update(self.message);
                 let bytes = mac.finalize().into_bytes();
                 let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).unwrap()
+                Vec::from_slice(bytes).expect("Failed to compute the digest")
             }
         }
     }
@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn test_vector1() {
         // tuples of (data, key, expected hex string)
-        let data = "Hi There".as_bytes();
+        let data = b"Hi There";
         let key = &[0x0b; 20];
         let expected = "b617318655057264e28bc0b6fb378c8ef146be00";
         let mut hash = HmacSha::new(key, data, &ShaTypes::Sha1);
@@ -105,8 +105,8 @@ mod tests {
     #[test]
     fn test_vector2() {
         // tuples of (data, key, expected hex string)
-        let data = "what do ya want for nothing?".as_bytes();
-        let key = "Jefe".as_bytes();
+        let data = b"what do ya want for nothing?";
+        let key = b"Jefe";
         let expected = "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79";
         let mut hash = HmacSha::new(key, data, &ShaTypes::Sha1);
         let buf = hash.compute_digest();

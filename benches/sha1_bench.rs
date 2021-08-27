@@ -9,7 +9,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             HmacSha::from(black_box(secret_key), black_box(message), &ShaTypes::Sha1)
                 .compute_digest()
-        })
+        });
     });
 }
 
