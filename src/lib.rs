@@ -1,28 +1,21 @@
 #![no_std]
+#![allow(dead_code)]
 
+use digest::Digest;
 use heapless::Vec;
 use hmac::{Hmac, Mac, NewMac};
-use sha1::Sha1;
-use sha2::{Sha256, Sha512};
-use sha3::{Sha3_256, Sha3_512};
-
-pub struct HmacSha<'a> {
+pub struct HmacSha<'a, T: Digest> {
     key: &'a [u8],
     message: &'a [u8],
-    sha_type: &'a ShaTypes,
+    sha_type: T,
 }
 
-pub enum ShaTypes {
-    Sha1,
-    Sha2_256,
-    Sha2_512,
-    Sha3_256,
-    Sha3_512,
-}
-
-impl<'a> HmacSha<'a> {
+impl<'a, T> HmacSha<'a, T>
+where
+    T: digest::Digest + digest::Update + digest::FixedOutput + digest::Reset + Clone + Default + digest::BlockInput,
+{
     #[must_use]
-    pub const fn new(key: &'a [u8], message: &'a [u8], sha_type: &'a ShaTypes) -> Self {
+    pub fn new(key: &'a [u8], message: &'a [u8], sha_type: T) -> Self {
         Self {
             key,
             message,
@@ -31,7 +24,7 @@ impl<'a> HmacSha<'a> {
     }
 
     #[must_use]
-    pub const fn from(key: &'a str, message: &'a str, sha_type: &'a ShaTypes) -> Self {
+    pub fn from(key: &'a str, message: &'a str, sha_type: T) -> Self {
         Self {
             key: key.as_bytes(),
             message: message.as_bytes(),
@@ -40,48 +33,11 @@ impl<'a> HmacSha<'a> {
     }
 
     pub fn compute_digest(&mut self) -> Vec<u8, 64> {
-        match self.sha_type {
-            ShaTypes::Sha1 => {
-                let mut mac =
-                    Hmac::<Sha1>::new_from_slice(self.key).expect("HMAC can take key of any size");
-                mac.update(self.message);
-                let bytes = mac.finalize().into_bytes();
-                let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).expect("Failed to compute the digest")
-            }
-            ShaTypes::Sha2_256 => {
-                let mut mac = Hmac::<Sha256>::new_from_slice(self.key)
-                    .expect("HMAC can take key of any size");
-                mac.update(self.message);
-                let bytes = mac.finalize().into_bytes();
-                let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).expect("Failed to compute the digest")
-            }
-            ShaTypes::Sha2_512 => {
-                let mut mac = Hmac::<Sha512>::new_from_slice(self.key)
-                    .expect("HMAC can take key of any size");
-                mac.update(self.message);
-                let bytes = mac.finalize().into_bytes();
-                let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).expect("Failed to compute the digest")
-            }
-            ShaTypes::Sha3_256 => {
-                let mut mac = Hmac::<Sha3_256>::new_from_slice(self.key)
-                    .expect("HMAC can take key of any size");
-                mac.update(self.message);
-                let bytes = mac.finalize().into_bytes();
-                let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).expect("Failed to compute the digest")
-            }
-            ShaTypes::Sha3_512 => {
-                let mut mac = Hmac::<Sha3_512>::new_from_slice(self.key)
-                    .expect("HMAC can take key of any size");
-                mac.update(self.message);
-                let bytes = mac.finalize().into_bytes();
-                let bytes = bytes.as_slice();
-                Vec::from_slice(bytes).expect("Failed to compute the digest")
-            }
-        }
+        let mut mac = Hmac::<T>::new_from_slice(self.key).expect("HMAC can take key of any size");
+        mac.update(self.message);
+        let bytes = mac.finalize().into_bytes();
+        let bytes = bytes.as_slice();
+        Vec::from_slice(bytes).expect("Failed to compute the digest")
     }
 }
 
@@ -89,7 +45,9 @@ impl<'a> HmacSha<'a> {
 mod tests {
 
     use super::HmacSha;
-    use super::ShaTypes;
+    use sha1::Sha1;
+    use sha2::{Sha256, Sha512};
+    use sha3::Sha3_256;
 
     #[test]
     fn test_vector1() {
@@ -97,7 +55,7 @@ mod tests {
         let data = b"Hi There";
         let key = &[0x0b; 20];
         let expected = "b617318655057264e28bc0b6fb378c8ef146be00";
-        let mut hash = HmacSha::new(key, data, &ShaTypes::Sha1);
+        let mut hash = HmacSha::new(key, data, Sha1::default());
         let buf = hash.compute_digest();
         assert_eq!(hex::encode(buf), expected);
     }
@@ -108,7 +66,7 @@ mod tests {
         let data = b"what do ya want for nothing?";
         let key = b"Jefe";
         let expected = "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79";
-        let mut hash = HmacSha::new(key, data, &ShaTypes::Sha1);
+        let mut hash = HmacSha::new(key, data, Sha1::default());
         let buf = hash.compute_digest();
         assert_eq!(hex::encode(buf), expected);
     }
@@ -119,7 +77,7 @@ mod tests {
         let data = &[0xdd; 50];
         let key = &[0xaa; 20];
         let expected = "125d7342b9ac11cd91a39af48aa17b4f63f175d3";
-        let mut hash = HmacSha::new(key, data, &ShaTypes::Sha1);
+        let mut hash = HmacSha::new(key, data, Sha1::default());
         let buf = hash.compute_digest();
         assert_eq!(hex::encode(buf), expected);
     }
@@ -133,7 +91,7 @@ mod tests {
             25,
         ];
         let expected = "4c9007f4026250c6bc8414f9bf50c86c2d7235da";
-        let mut hasher = HmacSha::new(key, data, &ShaTypes::Sha1);
+        let mut hasher = HmacSha::new(key, data, Sha1::default());
         let result = hasher.compute_digest();
         assert_eq!(hex::encode(result), expected);
     }
@@ -143,7 +101,7 @@ mod tests {
         let secret_key = "A very strong secret";
         let message = "My secret message";
         let expected = "bc192ba8d968e0c705eecd406c74299ca83d05e6";
-        let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha1);
+        let mut hasher = HmacSha::from(secret_key, message, Sha1::default());
         let result = hasher.compute_digest();
         assert_eq!(hex::encode(result), expected);
     }
@@ -153,7 +111,7 @@ mod tests {
         let secret_key = "A very strong secret";
         let message = "My secret message";
         let expected = "4134aad013bd12a6d7b0a5b5e78e3b1a76cb095cf5b7ceb6ac0717e433f56133";
-        let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha2_256);
+        let mut hasher = HmacSha::from(secret_key, message, Sha256::default());
         let result = hasher.compute_digest();
         assert_eq!(hex::encode(result), expected);
     }
@@ -163,7 +121,7 @@ mod tests {
         let secret_key = "A very strong secret";
         let message = "My secret message";
         let expected = "92b41d5b7e665a81faa9c18e25657107ad8f174cdc7558a15b6990c2c47c7bfe";
-        let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha3_256);
+        let mut hasher = HmacSha::from(secret_key, message, Sha3_256::default());
         let result = hasher.compute_digest();
         assert_eq!(hex::encode(result), expected);
     }
@@ -173,7 +131,7 @@ mod tests {
         let secret_key = "A very strong secret";
         let message = "My secret message";
         let expected = "e9a33f07f9d14e95efda67889e015c73b8c71c1372976c1d247c0e1d1aad7822427f113d8d8f0a5fbb33c7a547491867346d19e2a02bf02349118ff6c6eba51a";
-        let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha2_512);
+        let mut hasher = HmacSha::from(secret_key, message, Sha512::default());
         let result = hasher.compute_digest();
         assert_eq!(hex::encode(result), expected);
     }

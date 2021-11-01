@@ -1,10 +1,10 @@
 [package]
 name = "hmac-sha"
-version = "0.5.0"
-edition = "2018"
+version = "0.6.0"
+edition = "2021"
 authors = ["Philip Woolford <woolford.philip@gmail.com>", "Leonardo Razovic <lrazovic@gmail.com>"]
 keywords = ["crypto", "sha", "hmac", "digest"]
-description = "Minimal implementation of HMAC-SHA-{1,2,3} in Rust."
+description = "Minimal wrapper of HMAC-SHA-{1,2,3} in Rust."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/lrazovic/rust-hmac-sha"
 include = ["**/*.rs", "LICENSE"]
@@ -15,16 +15,18 @@ name = "hmacsha"
 path = "src/lib.rs"
 
 [dependencies]
-heapless = "0.7.5"
-hmac = { version = "0.11.0", default-features = false }
-sha-1 = { version = "0.9.7", default-features = false }
-sha2 = { version = "0.9.5", default-features = false }
-sha3 = { version = "0.9.1", default-features = false }
+heapless = "0.7"
+hmac = { version = "0.11", default-features = false }
+digest= { version = "0.9", default-features = false }
+
 
 
 [dev-dependencies]
-hex = "0.4.3"
-criterion = "0.3.5"
+hex = "0.4"
+criterion = "0.3"
+sha-1 = { version = "0.9", default-features = false }
+sha2 = { version = "0.9", default-features = false }
+sha3 = { version = "0.9", default-features = false }
 
 [[bench]]
 name = "sha1_bench"

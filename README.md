@@ -3,7 +3,7 @@
 ![CI status](https://github.com/lrazovic/rust-hmac-sha1/actions/workflows/ci.yml/badge.svg)
 [![creates.io version](https://img.shields.io/crates/v/hmac-sha)](https://crates.io/crates/hmac-sha)
 
-A pure Rust implementation of the Hash-based Message Authentication Code Algoritm for SHA-{1,2,3}. This project can be seen as an interface for the [RustCrypto](https://github.com/RustCrypto/hashes) crate, 
+A pure Rust implementation of the Hash-based Message Authentication Code Algoritm for SHA-{1,2,3}. This project can be seen as an interface/wrapper for the [RustCrypto](https://github.com/RustCrypto/hashes) crate, 
 focusing on user/developer ease of use.
 Works in a `#![no_std]` environment.
 
@@ -15,27 +15,33 @@ Unlike the original version, it supports SHA-2 and SHA-3 in addition to SHA-1. I
 
 ## Usage
 
-To import rust-hmac-sha add the following to your Cargo.toml:
+To import `rust-hmac-sha` add the following to your Cargo.toml:
 
 ```toml
 [dependencies]
-hmac-sha = "0.4"
+hmac-sha = "0.6"
+```
+and any other Hash crate that statisfy the [`Digest`](https://github.com/RustCrypto/traits/tree/master/digest) trait, like [`sha3`](https://github.com/RustCrypto/hashes/tree/master/sha3)
+```toml
+[dependencies]
+...
+sha3 = { version = "0.9", default-features = false }
 ```
 
-To use `rust-hmac-sha` add the following to your crate root:
+You can use `rust-hmac-sha` in this way:
 
 ```rust
 use hex;
 use hmacsha::HmacSha;
-use hmacsha::ShaTypes;
+use sha3::Sha3_256;
 
-let secret_key = "A very strong secret";
-let message = "My secret message";
-let expected = "bc192ba8d968e0c705eecd406c74299ca83d05e6";
-let mut hasher = HmacSha::from(secret_key, message, &ShaTypes::Sha1);
-let result = hasher.compute_digest();
-
-println!("{}", hex::encode(result));
+fn main() {
+    let secret_key = "A very strong secret";
+    let message = "My secret message";
+    let mut hasher = HmacSha::from(secret_key, message, Sha3_256::default());
+    let result = hasher.compute_digest();
+    println!("{}", hex::encode(result));
+}
 ```
 
 ## Contributions
