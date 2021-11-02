@@ -12,7 +12,13 @@ pub struct HmacSha<'a, T: Digest> {
 
 impl<'a, T> HmacSha<'a, T>
 where
-    T: digest::Digest + digest::Update + digest::FixedOutput + digest::Reset + Clone + Default + digest::BlockInput,
+    T: Digest
+        + Clone
+        + Default
+        + digest::Update
+        + digest::FixedOutput
+        + digest::Reset
+        + digest::BlockInput,
 {
     #[must_use]
     pub fn new(key: &'a [u8], message: &'a [u8], sha_type: T) -> Self {
